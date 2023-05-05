@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Random Report Example</title>
+  </head>
+  <body>
+    <h1>Random Report</h1>
+    <script>
+      async function report(name, labels, help = 'default help') {
+        await fetch('http://localhost:4001/counter-metric', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name,
+            help,
+            labels,
+          }),
+        });
+      }
+
+      function getRandomNum(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+      }
+
+      function getRandomItem(arr) {
+        return arr[getRandomNum(0, arr.length - 1)];
+      }
+
+      const ratingOptions = ['good', 'needs-improvement', 'poor'];
+
+      function loop(round, cb) {
+        for (let i = 0; i < round; i++) {
+          setTimeout(() => {
+            cb?.();
+          }, i * 1000);
+        }
+      }
+      //   loop(30, () => {
+      //     report('FCP', {
+      //       rating: getRandomItem(ratingOptions),
+      //       //   value: getRandomNum(100, 9999),
+      //     });
+      //   });
+
+      //   loop(10, () => {
+      //     report('FCP', {
+      //       rating: ratingOptions[0],
+      //     });
+      //   });
+
+      loop(20, () => {
+        report('FCP', {
+          rating: ratingOptions[1],
+        });
+      });
+
+      //   setTimeout(() => {
+      //     loop(20, () => {
+      //         report('FCP', {
+      //         rating: ratingOptions[1],
+      //         });
+      //     });
+      //   }, 10 * 1000)
+
+      //   setTimeout(() => {
+      //     loop(30, () => {
+      //         report('FCP', {
+      //         rating: ratingOptions[2],
+      //         });
+      //     });
+      //   }, (10 + 20) * 1000)
+    </script>
+  </body>
+</html>

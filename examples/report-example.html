@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Report CacheHit metric</title>
+    <link
+      rel="prefetch"
+      href="https://static.zhihu.com/heifetz/6116.216a26f4.7e059bd26c25b9e701c1.css"
+    />
+  </head>
+  <body>
+    <h1>node-prometheus-grafana-demo Report Example</h1>
+    <script>
+      // 上报数据到 Grafana
+      async function report(name, labels, help = 'default help') {
+        await fetch('http://localhost:4001/counter-metric', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name,
+            help,
+            labels,
+          }),
+        });
+      }
+
+      // 检查资源加载是否命中缓存
+      function checkResourceCacheHit() {
+        // 获取页面加载性能信息
+        const perfEntries = performance.getEntriesByType('resource');
+
+        let total = perfEntries.length;
+        let hitCacheNum = 0;
+        for (const entry of perfEntries) {
+          // 判断资源的加载时间是否小于50毫秒
+          // 50ms 来自于经验总结，可以根据实际情况调整
+          let hitCache = entry.duration < 50;
+          if (hitCache) {
+            hitCacheNum++;
+          }
+        }
+        report('cacheHiteRate', { hitCacheNum, total });
+      }
+
+      setTimeout(() => {
+        checkResourceCacheHit();
+      }, 3000);
+    </script>
+  </body>
+</html>

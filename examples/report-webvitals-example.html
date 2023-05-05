@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>获取 web-vitals 数据 DEMO</title>
+  </head>
+  <body>
+    <h2 id="fcp">FCP:</h2>
+    <h2 id="lcp">LCP:</h2>
+    <h2 id="ttfb">TTFB:</h2>
+    <p>首次交互（例如：点击任意位置）后可获取：</p>
+    <h2 id="fid">FID:</h2>
+    <p>页面可视化状态变化为隐藏（例如：切换标签页）后可获取：</p>
+    <h2 id="inp">INP:</h2>
+    <h2 id="cls">CLS:</h2>
+
+    <a href="https://github.com/JuniorTour">
+      Author: https://github.com/JuniorTour
+    </a>
+
+    <script type="module">
+      import {
+        onFCP,
+        onLCP,
+        onFID,
+        onCLS,
+        onINP,
+        onTTFB,
+      } from 'https://unpkg.com/web-vitals@3?module';
+
+      async function report(name, labels, help = 'default help') {
+        await fetch('http://localhost:4001/counter-metric', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name,
+            help,
+            labels,
+          }),
+        });
+      }
+      
+      function setInnerHtml(id, html) {
+        if (!id || !html) {
+          return;
+        }
+        const el = document.querySelector(`#${id}`);
+        if (el) {
+          el.innerHTML = html;
+        }
+      }
+
+      function onGetWebVitalsData(data) {
+        console.log(data);
+        if (!data?.name) {
+          return;
+        }
+        const name = data.name;
+        const value = data.value;
+        const rating = data.rating;
+        const msg = `${name}: value=${value}, rating=${rating}`;
+        console.log(msg);
+        setInnerHtml(name?.toLowerCase(), msg);
+        report(name, { rating, value });
+      }
+
+      onFCP(onGetWebVitalsData);
+      onLCP(onGetWebVitalsData);
+      onFID(onGetWebVitalsData);
+      onCLS(onGetWebVitalsData);
+      onINP(onGetWebVitalsData);
+      onTTFB(onGetWebVitalsData);
+    </script>
+  </body>
+</html>
