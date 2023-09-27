@@ -8,6 +8,21 @@
   <body>
     <h1>Random Report</h1>
     <script>
+      async function reportGauge(name, help, labels, value) {
+        await fetch('http://localhost:4001/gauge-metric', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name,
+            help,
+            labels,
+            value,
+          }),
+        });
+      }
+
       async function report(name, labels, help = 'default help') {
         await fetch('http://localhost:4001/counter-metric', {
           method: 'POST',
@@ -36,7 +51,8 @@
         for (let i = 0; i < round; i++) {
           setTimeout(() => {
             cb?.();
-          }, i * 1000);
+          // }, i * 1000);
+          }, getRandomNum(1, 1000) * 1000);
         }
       }
       //   loop(30, () => {
@@ -52,11 +68,11 @@
       //     });
       //   });
 
-      loop(20, () => {
-        report('FCP', {
-          rating: ratingOptions[1],
-        });
-      });
+      // loop(20, () => {
+      //   report('FCP', {
+      //     rating: ratingOptions[1],
+      //   });
+      // });
 
       //   setTimeout(() => {
       //     loop(20, () => {
@@ -73,6 +89,17 @@
       //         });
       //     });
       //   }, (10 + 20) * 1000)
+
+      loop(30, () => {
+        reportGauge(
+          'AssetsSize',
+          'AssetsSize Data from front end',
+          {
+            timestamp: Date.now()
+          },
+          getRandomNum(0, 100)
+        );
+      });
     </script>
   </body>
 </html>
