@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CDN HTTP connection metric</title>
+    <link
+      rel="prefetch"
+      href="https://static.zhihu.com/heifetz/6116.216a26f4.7e059bd26c25b9e701c1.css"
+    />
+  </head>
+  <body>
+    <h1>
+      <a href="https://juejin.cn/post/7274889579076108348"
+        >《1.4秒到0.4秒-2行代码让JS加载耗时减少67%-《现代前端工程体验优化》-第二章-第一节》</a
+      >
+    </h1>
+    <img
+      src="https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/5abdb9a058574c2e84c09883ac65541d~tplv-k3u1fbpfcp-jj-mark:0:0:0:0:q75.image#?w=972&h=550&s=79523&e=png&b=ffffff"
+      alt=""
+    />
+    <script>
+      async function reportGauge(name, help, labels, value) {
+        await fetch('http://localhost:4001/gauge-metric', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name,
+            help,
+            labels,
+            value,
+          }),
+        });
+      }
+
+      // https://developer.mozilla.org/en-US/docs/Web/API/PerformanceResourceTiming
+      const ResourceTiming = {
+        DNSLookupTime: ['domainLookupEnd', 'domainLookupStart'],
+        TCPHandshakeTime: ['connectEnd', 'connectStart'], // 也适用于QUIC协议
+        TLSNegotiationTime: ['requestStart', 'secureConnectionStart'],
+        requestToResponseTime: ['responseEnd', 'requestStart'],
+      };
+
+      function getConnectionData(entry) {
+        let data = {};
+        Object.keys(ResourceTiming).forEach((name) => {
+          const [end, start] = ResourceTiming[name];
+          data[name] = entry[end] - entry[start];
+        });
+        return data;
+      }
+
+      function getCDNMetric() {
+        const entries = performance.getEntriesByType('resource');
+        entries.forEach((entry) => {
+          const entryName = entry.name;
+          const connectionData = getConnectionData(entry);
+          console.log(
+            `connectionData=${JSON.stringify(connectionData, null, 2)}`
+          );
+          Object.keys(connectionData).forEach((name) => {
+            reportGauge(
+              name,
+              `frontend data of ${name}`,
+              {
+                entryName,
+                id: Date.now(),
+              },
+              connectionData[name]
+            );
+          });
+        });
+      }
+
+      setTimeout(() => {
+        getCDNMetric();
+        setTimeout(() => {
+          location.reload();
+        }, 5000);
+      }, 3000);
+    </script>
+  </body>
+</html>
