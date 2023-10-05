@@ -51,8 +51,8 @@
         for (let i = 0; i < round; i++) {
           setTimeout(() => {
             cb?.();
-          // }, i * 1000);
-          }, getRandomNum(1, 1000) * 1000);
+          }, i * 1000);
+          // }, getRandomNum(1, 1000) * 1000);
         }
       }
       //   loop(30, () => {
@@ -91,14 +91,24 @@
       //   }, (10 + 20) * 1000)
 
       loop(30, () => {
+        type = 'Image';
         reportGauge(
-          'AssetsSize',
-          'AssetsSize Data from front end',
+          `ResourceSize`,
+          `resource size load of ${type} from front-end project`,
           {
-            timestamp: Date.now()
+            type,
+            id: Date.now(),
           },
-          getRandomNum(0, 100)
+          getRandomNum(1000, 100000)
         );
+        // reportGauge(
+        //   'AssetsSize',
+        //   'AssetsSize Data from front end',
+        //   {
+        //     timestamp: Date.now()
+        //   },
+        //   getRandomNum(0, 100)
+        // );
       });
     </script>
   </body>

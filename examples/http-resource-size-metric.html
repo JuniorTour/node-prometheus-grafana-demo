@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HTTP Resource Size Metric</title>
+    <link
+      rel="prefetch"
+      href="https://static.zhihu.com/heifetz/6116.216a26f4.7e059bd26c25b9e701c1.css"
+    />
+  </head>
+  <body>
+    <h1>2.3.2.3 加载静态资源总体积指标</h1>
+    <h2>
+      <a href="https://juejin.cn/post/7274889579076108348"
+        >《1.4秒到0.4秒-2行代码让JS加载耗时减少67%-《现代前端工程体验优化》-第二章-第一节》</a
+      >
+    </h2>
+    <img
+      src="https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/5abdb9a058574c2e84c09883ac65541d~tplv-k3u1fbpfcp-jj-mark:0:0:0:0:q75.image#?w=972&h=550&s=79523&e=png&b=ffffff"
+      alt=""
+    />
+
+    <script>
+      async function reportGauge(name, help, labels, value) {
+        await fetch('http://localhost:4001/gauge-metric', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name,
+            help,
+            labels,
+            value,
+          }),
+        });
+      }
+
+      // 定义资源类型的映射关系
+      const resourceTypes = {
+        document: 'Document',
+        script: 'Script',
+        link: 'Link',
+        stylesheet: 'Stylesheet',
+        img: 'Image',
+        media: 'Media',
+        font: 'Font',
+        xhr: 'XHR',
+        fetch: 'Fetch',
+        other: 'Other',
+      };
+
+      function getResourceSize() {
+        // 获取所有资源的性能信息
+        const resources = performance.getEntriesByType('resource');
+
+        // 统计各类资源的加载体积
+        const resourceSizes = {};
+
+        resources.forEach((resource) => {
+          const type =
+            resourceTypes[resource.initiatorType] || resourceTypes['other'];
+
+          resourceSizes[type] =
+            (resourceSizes[type] || 0) + resource.transferSize;
+        });
+
+        // 输出加载体积结果
+        console.log('资源加载体积统计：');
+        for (const type in resourceSizes) {
+          // console.log(`${type}: ${resourceSizes[type]} bytes`);
+
+          reportGauge(
+            `ResourceSize`,
+            `resource size load of ${type} from front-end project`,
+            {
+              type,
+              id: Date.now(),
+            },
+            resourceSizes[type],
+          );
+        }
+      }
+
+      setTimeout(() => {
+        getResourceSize();
+      }, 1000); // 可以按需改成项目完全加载的时间点
+    </script>
+  </body>
+</html>
